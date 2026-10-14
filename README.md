@@ -1,4 +1,7 @@
-# DevOps Capstone Template
+# devops-capstone-project
+
+This project is part of the DevOps Capstone course. It focuses on building a RESTful Customer Accounts microservice using Agile planning, cloud-native development, CI/CD pipelines, and Test-Driven Development across multiple sprints.
+
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-green.svg)](https://shields.io/)
