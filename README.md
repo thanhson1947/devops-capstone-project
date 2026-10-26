@@ -1,5 +1,8 @@
 # devops-capstone-project
 
+![Build Status](https://github.com/thanhson1947/devops-capstone-project/actions/workflows/ci-build.yaml/badge.svg)
+
+
 This project is part of the DevOps Capstone course. It focuses on building a RESTful Customer Accounts microservice using Agile planning, cloud-native development, CI/CD pipelines, and Test-Driven Development across multiple sprints.
 
 
