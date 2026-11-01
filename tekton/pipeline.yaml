@@ -1,66 +1,104 @@
-#
-# This pipeline needs the following tasks from Tekton Catalog
-#   - git-clone
-#   - flake8
-#
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
-metadata:  
+metadata:
   name: cd-pipeline
+
 spec:
   workspaces:
     - name: pipeline-workspace
+
   params:
     - name: repo-url
+      type: string
+
     - name: branch
+      type: string
       default: main
+
+    - name: build-image
+      type: string
+
   tasks:
+
     - name: init
-      workspaces:
-        - name: source
-          workspace: pipeline-workspace          
       taskRef:
         name: cleanup
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
 
     - name: clone
-      workspaces:
-        - name: output
-          workspace: pipeline-workspace          
-      taskRef:
-        name: git-clone
-      params:
-      - name: url
-        value: $(params.repo-url)
-      - name: revision
-        value: $(params.branch)
       runAfter:
         - init
 
-    - name: lint
-      workspaces:
-        - name: source
-          workspace: pipeline-workspace
       taskRef:
-        name: flake8
+        name: git-clone
+
+      workspaces:
+        - name: output
+          workspace: pipeline-workspace
+
       params:
-      - name: image
-        value: "python:3.9-slim"
-      - name: args
-        value: ["--count","--max-complexity=10","--max-line-length=127","--statistics"]
+        - name: url
+          value: $(params.repo-url)
+
+        - name: revision
+          value: $(params.branch)
+
+    - name: lint
       runAfter:
         - clone
 
-    - name: tests
+      taskRef:
+        name: flake8
+
       workspaces:
         - name: source
           workspace: pipeline-workspace
-      taskRef:
-        name: nose
+
       params:
-	  - name: database_uri
-		value: "sqlite:///test.db"
-      - name: args
-        value: "-v --with-spec --spec-color"
+        - name: image
+          value: "python:3.9-slim"
+
+        - name: args
+          value:
+            - "--count"
+            - "--max-complexity=10"
+            - "--max-line-length=127"
+            - "--statistics"
+
+    - name: tests
       runAfter:
         - clone
+
+      taskRef:
+        name: nose
+
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+
+      params:
+        - name: database_uri
+          value: "sqlite:///test.db"
+
+        - name: args
+          value: "-v --with-spec --spec-color"
+
+    - name: build
+      runAfter:
+        - lint
+        - tests
+
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+
+      params:
+        - name: IMAGE
+          value: $(params.build-image)
